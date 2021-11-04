@@ -60,7 +60,8 @@ export default new Vuex.Store({
                 open:data[item]["1. open"],
                 close:data[item]["4. close"],
                 high:data[item]["2. high"],
-                low:data[item]["3. low"]
+                low:data[item]["3. low"],
+                volume:data[item]["5. volume"]
             })
             list.push(obj)
         })
@@ -71,11 +72,11 @@ export default new Vuex.Store({
       });
     },
 
-    async getWeeklyData({commit}){
+    async getWeeklyData({commit,state}){
       const options = {
         method: 'GET',
         url: 'https://alpha-vantage.p.rapidapi.com/query',
-        params: {function: 'TIME_SERIES_WEEKLY', symbol: 'MSFT', datatype: 'json'},
+        params: {function: 'TIME_SERIES_WEEKLY', symbol: `${state.searchSymbol}`, datatype: 'json'},
         headers: {
           'x-rapidapi-host': 'alpha-vantage.p.rapidapi.com',
           'x-rapidapi-key': 'cc7a52ffb5msha38b3d0953d7f6ep197d81jsn227207fde546'
@@ -91,7 +92,8 @@ export default new Vuex.Store({
                 open:data[item]["1. open"],
                 close:data[item]["4. close"],
                 high:data[item]["2. high"],
-                low:data[item]["3. low"]
+                low:data[item]["3. low"],
+                volume:data[item]["5. volume"]
             })
             list.push(obj)
         })
@@ -103,11 +105,11 @@ export default new Vuex.Store({
       });
     },
 
-    async getMonthlyData({commit}){
+    async getMonthlyData({commit,state}){
       const options = {
         method: 'GET',
         url: 'https://alpha-vantage.p.rapidapi.com/query',
-        params: {symbol: 'MSFT', function: 'TIME_SERIES_MONTHLY', datatype: 'json'},
+        params: {symbol: `${state.searchSymbol}`, function: 'TIME_SERIES_MONTHLY', datatype: 'json'},
         headers: {
           'x-rapidapi-host': 'alpha-vantage.p.rapidapi.com',
           'x-rapidapi-key': 'cc7a52ffb5msha38b3d0953d7f6ep197d81jsn227207fde546'
@@ -123,19 +125,21 @@ export default new Vuex.Store({
                 open:data[item]["1. open"],
                 close:data[item]["4. close"],
                 high:data[item]["2. high"],
-                low:data[item]["3. low"]
+                low:data[item]["3. low"],
+                volume:data[item]["5. volume"]
             })
             list.push(obj)
         })
         if(list.length>0) console.log("Weekly coming")
         
         commit("setData",list.slice(0,13))
+        console.log("monthly",list.slice(0,13))
       }).catch(function (error) {
         console.error(error);
       });
     },
 
-    getDatabyName({commit,state}){
+    getSymbolbyName({commit,state}){
       const options = {
         method: 'GET',
         url: 'https://alpha-vantage.p.rapidapi.com/query',
@@ -158,7 +162,6 @@ export default new Vuex.Store({
         })
 
         commit("setFoundCompanies",list)
-        console.log("store",list);
       }).catch(function (error) {
         console.error(error);
       });
