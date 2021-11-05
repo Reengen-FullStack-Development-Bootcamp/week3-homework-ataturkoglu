@@ -4,6 +4,8 @@
         <v-row class="d-flex justify-center">
           <v-col cols="4" class="d-flex align-center">
             <v-autocomplete 
+             ref="autocomplete"
+             autofocus
              :search-input.sync="searchInput" 
              :items="getFoundCompanies==null?[]:getFoundCompanies"
              no-data-text="Waiting"
@@ -16,8 +18,8 @@
         </v-row>
       </v-container>
     <v-container class="m-0 p-0 d-flex justify-center align-center" style="width:fit-content">
-      <transition name="slide">
-        <router-view v-if="chart_state"></router-view>
+      <transition name="slide" mode="out-in">
+        <router-view :key="$store.state.chart_key"></router-view>
       </transition>
     </v-container>
   </v-container>
@@ -33,7 +35,6 @@ export default {
   data(){
     return{
       searchInput:null,
-      chart_state:this.$store.state.chartState
     }
   },
   computed:{
@@ -41,12 +42,10 @@ export default {
   },
   methods:{
     selectCompany(e){
-      console.log("searchCompany")
       this.$store.commit("setSearchSymbol",e)
       this.$router.push({name:"Chart",params:{id:e},query:{view:"daily"}})
     },
     search(){
-      console.log("name",this.searchInput)
       this.$store.commit("setSearchCompany",this.searchInput)
       this.$store.dispatch("getSymbolbyName")
     },
@@ -67,11 +66,10 @@ export default {
   }
 
   .slide-enter-active {
-    animation: fromLeft 1s;
+    animation: fromLeft 1s ease-in-out;
   }
-  .fade-leave-active{
-    animation-delay: .5s;
-    animation: toRight 1s;
+  .fade-leave-active, .fade-leave-to{
+    animation: toRight 1s ease-in-out;
   }
 
   @keyframes fromLeft{
@@ -91,7 +89,7 @@ export default {
     }
     to{
       transform: translateX(200%);
-      opacity: 1;
+      opacity: 0;
     }
   }
 </style>

@@ -3,31 +3,22 @@ import App from './App.vue'
 import router from './router/router.js'
 import store from './store/store.js'
 import vuetify from './plugins/vuetify'
-//import * as fs from 'fs'
 
 Vue.config.productionTip = false
 
-/*router.beforeEach((to,from,next)=>{
+router.beforeEach((to,from,next)=>{
   let obj = new Object({
-    date:new Date(),
-    from:{
-      path:from.fullPath,
-      companySymbol:from.params.id,
-      view:from.query.view
-    },
-    to:{
-      path:to.fullPath,
-      companySymbol:to.params.id,
-      view:to.query.view
-    },
-    user:store.state.user
+    id:store.state.log_count,
+    name:`user:${store.state.user} - redirect - ${new Date().toUTCString()}`,
+    from:from.fullPath,
+    to:to.fullPath
   })
 
-  fs.writeFile("@/log.json",JSON.stringify(obj),(err)=>{
-    if(err) console.log("dosya yazılamadı")
-  })
+  localStorage.setItem(`log${store.state.log_count}`,JSON.stringify(obj))
+  store.state.log_count++
+
   next()
-})*/
+})
 
 new Vue({
   router,

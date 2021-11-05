@@ -190,31 +190,33 @@ export default {
 
 		getDailyData(){
 			if(this.$route.query.view!="daily"){
+				this.$store.state.chart_key++
 				this.$router.push({name:"Chart",params:{id:this.$route.params.id},query:{view:"daily"}})
-				this.$store.dispatch("getChartData",this.$route.query.view)
+				//this.$store.dispatch("getChartData",this.$route.query.view)
 			}
 
 		},
 
 		getWeeklyData(){
 			if(this.$route.query.view!="weekly"){
-				this.$store.state.chartState=false
+				this.$store.state.chart_key++
 				this.$router.push({name:"Chart",params:{id:this.$route.params.id},query:{view:"weekly"}})
-				this.$store.dispatch("getChartData",this.$route.query.view)
+				//this.$store.dispatch("getChartData",this.$route.query.view)
 			}
 		},
 
 		getMonthlyData(){
 			if(this.$route.query.view!="monthly"){
+				this.$store.state.chart_key++
 				this.$router.push({name:"Chart",params:{id:this.$route.params.id},query:{view:"monthly"}})
-				this.$store.dispatch("getChartData",this.$route.query.view)
+				//this.$store.dispatch("getChartData",this.$route.query.view)
 			}
 		},
-		beforeRouteUpdate (to, next) {
-			this.$store.dispatch("getChartData",to.query.view)
-			next()
-		}
-    }
+    },
+	beforeRouteUpdate (to, from, next) {
+		this.$store.dispatch("getChartData",to.query.view)
+		next()
+	}
 }
 </script>
 
@@ -256,7 +258,7 @@ export default {
 
 	.butons-enter-active{
 		animation-delay: .5s;
-		animation: toUp 1s;
+		animation: toUp 1s ease-in-out;
 	}
 	@keyframes toUp{
 		from {
