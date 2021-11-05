@@ -1,10 +1,12 @@
 <template>
     <div v-if="getData!=[]||null" id="chart" ref="chart">
-		<v-container style="width:fitcontent" ref="btns" class="btns">
-			<v-btn @click="getDailyData" class="btn mr-3" elevation="2" raised rounded small>Daily</v-btn>
-			<v-btn @click="getWeeklyData" class="btn mr-3" elevation="2" raised rounded small>Weekly</v-btn>
-			<v-btn @click="getMonthlyData" class="btn mr-3" elevation="2" raised rounded small>Monthly</v-btn>
-		</v-container>
+		<transition name="butons">
+			<v-container v-if="btn_state" style="width:fitcontent" ref="btns" class="btns">
+				<v-btn @click="getDailyData" class="btn mr-3" elevation="2" raised rounded small>Daily</v-btn>
+				<v-btn @click="getWeeklyData" class="btn mr-3" elevation="2" raised rounded small>Weekly</v-btn>
+				<v-btn @click="getMonthlyData" class="btn mr-3" elevation="2" raised rounded small>Monthly</v-btn>
+			</v-container>
+		</transition>
     </div>
 </template>
 
@@ -14,13 +16,13 @@ import { mapGetters, mapState } from "vuex"
 export default {
     data(){
         return{
+			btn_state:false,
         }
     },
 	beforeMount(){
 		if(this.$route.params.id){
-			console.log("id",this.$route.params.id)
 			this.$store.commit("setSearchSymbol",this.$route.params.id)
-			this.$store.dispatch("getDailyData")
+			this.$store.dispatch("getChartData",this.$route.query.view)
 		}
 	},
     mounted(){
@@ -31,8 +33,13 @@ export default {
     },
 	watch:{
 		getData: {
-			handler(){
-				this.setChart()
+			handler(val){
+				if(val!=null||[]){
+					this.btn_state=true
+					this.setChart()
+				}else{
+					this.btn_state=false
+				}
 			}
 		}
 	},
@@ -87,8 +94,8 @@ export default {
             svg.append("rect")                                                          //arka planı renklendirmek için svg elementine bir rect elementi ekliyoruz
                 .attr("width",chart_width)
                 .attr("height",chart_height)
-                .attr("rx",10)
-                .attr("ry",10)
+                .attr("rx",7)
+                .attr("ry",7)
                 .attr("fill","whitesmoke")
                 .attr("transform","translate("+margin.left+","+margin.top+")")
                 
@@ -182,20 +189,29 @@ export default {
         },
 
 		getDailyData(){
-			this.$store.dispatch("getDailyData")
+			if(this.$route.query.view!="daily"){
+				this.$router.push({name:"Chart",params:{id:this.$route.params.id},query:{view:"daily"}})
+				this.$store.dispatch("getChartData",this.$route.query.view)
+			}
+
 		},
 
 		getWeeklyData(){
-			this.$store.dispatch("getWeeklyData")
+			if(this.$route.query.view!="weekly"){
+				this.$store.state.chartState=false
+				this.$router.push({name:"Chart",params:{id:this.$route.params.id},query:{view:"weekly"}})
+				this.$store.dispatch("getChartData",this.$route.query.view)
+			}
 		},
 
 		getMonthlyData(){
-			this.$store.dispatch("getMonthlyData")
+			if(this.$route.query.view!="monthly"){
+				this.$router.push({name:"Chart",params:{id:this.$route.params.id},query:{view:"monthly"}})
+				this.$store.dispatch("getChartData",this.$route.query.view)
+			}
 		},
-
-		beforeRouteUpdate(to,from,next){
-			console.log("to")
-			console.log("from")
+		beforeRouteUpdate (to, next) {
+			this.$store.dispatch("getChartData",to.query.view)
 			next()
 		}
     }
@@ -237,4 +253,21 @@ export default {
     .fall{
         fill: rgb(198, 0, 0);
     }
+
+	.butons-enter-active{
+		animation-delay: .5s;
+		animation: toUp 1s;
+	}
+	@keyframes toUp{
+		from {
+			transform: translateY(200%);
+			opacity: 0;
+			z-index: -2;
+		}
+		to{
+			transform: translateY(0);
+			opacity: 1;
+			z-index: 2;
+		}
+	}
 </style>
