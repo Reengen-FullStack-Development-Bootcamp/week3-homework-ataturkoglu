@@ -7,9 +7,16 @@ import vuetify from './plugins/vuetify'
 Vue.config.productionTip = false
 
 router.beforeEach((to,from,next)=>{
+  let name=null
+  if(store.state.user=="Admin"){
+    name=`user:${store.state.user} - ${new Date().toUTCString()}`
+  }else{
+    name=`user:${store.state.user}${Math.floor(Math.random()*999+1)} - ${new Date().toUTCString()}`
+  }
   let obj = new Object({
     id:store.state.log_count,
-    name:`user:${store.state.user} - redirect - ${new Date().toUTCString()}`,
+    name:name,
+    state:"redirect",
     from:from.fullPath,
     to:to.fullPath
   })

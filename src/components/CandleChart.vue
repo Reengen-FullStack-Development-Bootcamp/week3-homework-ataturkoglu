@@ -1,5 +1,5 @@
 <template>
-    <div v-if="getData!=[]||null" id="chart" ref="chart">
+    <div v-if="getData!=[]||null" id="chart" ref="chart" class="chart">
 		<transition name="butons">
 			<v-container v-if="btn_state" style="width:fitcontent" ref="btns" class="btns">
 				<v-btn @click="getDailyData" class="btn mr-3" elevation="2" raised rounded small>Daily</v-btn>
@@ -17,6 +17,8 @@ export default {
     data(){
         return{
 			btn_state:false,
+			height:null,
+			width:null
         }
     },
 	beforeMount(){
@@ -27,7 +29,11 @@ export default {
 	},
     mounted(){
 		setTimeout(() => {
-			if(this.getData!=null) this.setChart()
+			if(this.getData!=null){
+				this.width= parseInt(window.getComputedStyle(this.$refs.chart).width)
+				this.height= parseInt(window.getComputedStyle(this.$refs.chart).height)
+				this.setChart()
+			} 
 		}, 1000);
 		this.$store.dispatch("getSymbolbyName")
     },
@@ -35,9 +41,13 @@ export default {
 		getData: {
 			handler(val){
 				if(val!=null||[]){
+					this.$store.state.loader=false
 					this.btn_state=true
+					this.width= parseInt(window.getComputedStyle(this.$refs.chart).width)
+					this.height= parseInt(window.getComputedStyle(this.$refs.chart).height)
 					this.setChart()
 				}else{
+					this.$store.state.loader=false
 					this.btn_state=false
 				}
 			}
@@ -54,14 +64,18 @@ export default {
 				this.$refs.chart.removeChild(chartsvg)
 			}
             
-			let margin = {top: 70, right: 50, bottom: 50, left: 50};
-			let padding = { top: 30, right: 70, bottom: 50, left: 70 }
+			let margin = {top: 60, right: 40, bottom: 40, left: 40};
+			let padding = { top: 30, right: 50, bottom: 50, left: 50 }
 
-			let width = 1000                                                            //işlemleri kolaylaştırmak için içten dışa doğru alanları oluşturuyoruz
-			let height = 400                                                            //en içteki grafik dataların yazılacağı bölümden dışa doğru padding ve marginler
-            let space = 10                                                            	//ile dışa doğru chart kısmının ve svg kısmının width ve hight değerlerini
+			//let chart = document.getElementById("chart")
+
+			let width = this.width-margin.left-margin.right-padding.left-padding.right                                                            //işlemleri kolaylaştırmak için içten dışa doğru alanları oluşturuyoruz
+			
+			let height = this.height-margin.top-margin.bottom-padding.top-padding.bottom                                                            //en içteki grafik dataların yazılacağı bölümden dışa doğru padding ve marginler
+
+			let space = 10                                                            	//ile dışa doğru chart kısmının ve svg kısmının width ve hight değerlerini
             let vol_width = width														//hazır hale getiriyoruz
-            let vol_height = 200
+            let vol_height = height*2/5
             let candles_height = height+margin.top
             let chart_height = candles_height+space+vol_height
             let chart_width = width+padding.left+padding.right
@@ -98,18 +112,17 @@ export default {
                 .attr("ry",7)
                 .attr("fill","whitesmoke")
                 .attr("transform","translate("+margin.left+","+margin.top+")")
-                
+
             const vol = svg.append("g")						                        	// volume grafiğin yazılacağı g elementini svg elementimize ekliyoruz
                 .attr("width",vol_width)
                 .attr("height",vol_height)
 				.attr("transform","translate("+(margin.left+padding.left)+","+(margin.top+candles_height+space)+")")
-            
+
 
             const base = svg.append("g")						                        //grafiğin yazılacağı g elementini svg elementimize ekliyoruz
                 .attr("width",width)
                 .attr("height",height)
 				.attr("transform","translate("+(margin.left+padding.left)+","+(margin.top+padding.top)+")")
-				
 
             const x = d3.scaleBand()							                        //x ekseni işaretleme (bant)
                 .domain(this.getData.map(d=>d.date))
@@ -169,7 +182,7 @@ export default {
             const vy = d3.scaleLinear()							                        // volume için y ekseni işaretleme (bant)
                 .domain([(minVol),(maxVol)])
                 .range([vol_height,0])
-            
+
             vol.append("g")										                        // volume için y ekseninde bir grup oluşturup, hazırladığımız vy bandını ekliyoruz
                 .call(d3.axisRight(vy))
                 .attr("transform","translate("+(vol_width)+")")
@@ -182,7 +195,7 @@ export default {
                 .attr("y",function(d){return vy(d.volume)})
 				.attr("width", x.bandwidth())
 				.attr("height", function(d) { return vol_height - vy(d.volume); })
-				.attr("fill", "rgb(9,40,101)")
+				.attr("fill", "rgb(20, 98, 126)")
 
 
 
@@ -190,6 +203,7 @@ export default {
 
 		getDailyData(){
 			if(this.$route.query.view!="daily"){
+				this.$store.state.loader=true
 				this.$store.state.chart_key++
 				this.$router.push({name:"Chart",params:{id:this.$route.params.id},query:{view:"daily"}})
 				//this.$store.dispatch("getChartData",this.$route.query.view)
@@ -199,6 +213,7 @@ export default {
 
 		getWeeklyData(){
 			if(this.$route.query.view!="weekly"){
+				this.$store.state.loader=true
 				this.$store.state.chart_key++
 				this.$router.push({name:"Chart",params:{id:this.$route.params.id},query:{view:"weekly"}})
 				//this.$store.dispatch("getChartData",this.$route.query.view)
@@ -207,6 +222,7 @@ export default {
 
 		getMonthlyData(){
 			if(this.$route.query.view!="monthly"){
+				this.$store.state.loader=true
 				this.$store.state.chart_key++
 				this.$router.push({name:"Chart",params:{id:this.$route.params.id},query:{view:"monthly"}})
 				//this.$store.dispatch("getChartData",this.$route.query.view)
@@ -214,22 +230,22 @@ export default {
 		},
     },
 	beforeRouteUpdate (to, from, next) {
+		this.$store.state.loader=true
 		this.$store.dispatch("getChartData",to.query.view)
+		this.$store.state.chart_key++
 		next()
 	}
 }
 </script>
 
 <style>
-	#chart{
+	.chart{
 		position: relative;
-		width: 1000px;
-		height: 620px;
+		height: 35vw;
 		justify-self: center;
 		border-radius: 10px;
-		box-shadow: 0px 0px 5px grey;
-		border: 1px solid black;
-        background-color: wheat;
+		width: 80vw;
+		margin-bottom: 150px;
 	}
 	.container{
 		position: relative;
@@ -243,7 +259,7 @@ export default {
 	.btns{
 		position: absolute;
 		z-index: 2;
-		top: 20px;
+		top: 5px;
 		left: 2.7%;
 	}
 	.btn{
@@ -255,6 +271,9 @@ export default {
     .fall{
         fill: rgb(198, 0, 0);
     }
+	.bluee{
+		fill:rgb(20, 98, 126)
+	}
 
 	.butons-enter-active{
 		animation-delay: .5s;

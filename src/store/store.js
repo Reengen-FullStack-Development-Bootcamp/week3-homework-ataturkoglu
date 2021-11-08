@@ -12,6 +12,7 @@ export default new Vuex.Store({
     foundCompanies:null,
     companyData:null,
     chartState:true,
+    loader:false,
     chart_key:0,
     user:"Guest",
     log_count:0,

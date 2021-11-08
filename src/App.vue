@@ -1,16 +1,16 @@
 <template>
   <v-app id="app" no-gutters>
-    <v-app-bar app elevation="5" no-gutters fluid>
-      <v-col cols="9">
+    <v-app-bar class="pr-7" app elevation="5" no-gutters fluid>
+      <v-col cols="9" xs="2">
         <v-toolbar-title>ANE</v-toolbar-title>
       </v-col>
       <v-spacer></v-spacer>
-      <v-col cols="3" class="d-flex align-center">
-        <v-btn v-if="$route.name!='Admin'" class="mr-3" small @click="toAdminPage">
-          Admin Page
-        </v-btn>
-        <v-btn v-if="$route.name!='Home'" class="mr-3" small @click="toHomePage">
+      <v-col cols="3" xs="9" class="d-flex align-center">
+        <v-btn v-if="$route.name=='Admin'" class="mr-3" small @click="toHomePage">
           Home Page
+        </v-btn>
+        <v-btn v-else class="mr-3" small @click="toAdminPage">
+          Admin Page
         </v-btn>
         <v-select 
          color 
