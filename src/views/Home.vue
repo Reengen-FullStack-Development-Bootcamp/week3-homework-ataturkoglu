@@ -8,7 +8,7 @@
              :search-input.sync="searchInput" 
              :items="getFoundCompanies==null?[]:getFoundCompanies"
              no-data-text="Waiting"
-             
+             :hide-no-data="getFoundCompanies==null"
              @change="selectCompany"
              solo dense
              class="my-0"
@@ -63,8 +63,6 @@ export default {
     search(){
       this.$store.commit("setSearchCompany",this.searchInput)
       this.$store.dispatch("getSymbolbyName")
-
-      //:hide-no-data="getFoundCompanies==null"
     },
   },
 }

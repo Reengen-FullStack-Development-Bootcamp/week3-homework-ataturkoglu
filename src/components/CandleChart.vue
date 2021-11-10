@@ -7,6 +7,9 @@
 				<v-btn @click="getMonthlyData" class="btn mr-3" elevation="2" raised rounded small>Monthly</v-btn>
 			</v-container>
 		</transition>
+		<div v-if="waiting" class="waiting">
+		</div>
+		<p v-if="waiting" id="text" class="text">Waiting API{{dots}}</p>
     </div>
 </template>
 
@@ -18,24 +21,26 @@ export default {
         return{
 			btn_state:false,
 			height:null,
-			width:null
+			width:null,
+			dots:""
         }
     },
 	beforeMount(){
+		console.log("before")
 		if(this.$route.params.id){
-			this.$store.commit("setSearchSymbol",this.$route.params.id)
+			if(this.$store.state.searchSymbol==null) this.$store.commit("setSearchSymbol",this.$route.params.id)
 			this.$store.dispatch("getChartData",this.$route.query.view)
 		}
 	},
     mounted(){
 		setTimeout(() => {
 			if(this.getData!=null){
+				console.log("mounted")
 				this.width= parseInt(window.getComputedStyle(this.$refs.chart).width)
 				this.height= parseInt(window.getComputedStyle(this.$refs.chart).height)
 				this.setChart()
 			} 
 		}, 1000);
-		this.$store.dispatch("getSymbolbyName")
     },
 	watch:{
 		getData: {
@@ -51,10 +56,26 @@ export default {
 					this.btn_state=false
 				}
 			}
+		},
+
+		waiting:{
+			handler(val){
+				if(val){
+					var waitingDots = setInterval(() => {
+						this.dots+="."
+						if(this.dots.length>3){
+							this.dots=""
+						}
+					}, 500);
+				}else{
+					clearInterval(waitingDots)
+				}
+			}
 		}
+
 	},
 	computed:{
-		...mapState(["companyData"]),
+		...mapState(["companyData","waiting"]),
 		...mapGetters(["getData"]),
 	},
     methods:{        
@@ -65,13 +86,10 @@ export default {
 			}
             
 			let margin = {top: 60, right: 40, bottom: 40, left: 40};
-			let padding = { top: 30, right: 50, bottom: 50, left: 50 }
+			let padding = { top: 30, right: 70, bottom: 50, left: 70 }
 
-			//let chart = document.getElementById("chart")
-
-			let width = this.width-margin.left-margin.right-padding.left-padding.right                                                            //işlemleri kolaylaştırmak için içten dışa doğru alanları oluşturuyoruz
-			
-			let height = this.height-margin.top-margin.bottom-padding.top-padding.bottom                                                            //en içteki grafik dataların yazılacağı bölümden dışa doğru padding ve marginler
+			let width = this.width-margin.left-margin.right-padding.left-padding.right  	//işlemleri kolaylaştırmak için içten dışa doğru alanları oluşturuyoruz
+			let height = this.height-margin.top-margin.bottom-padding.top-padding.bottom    //en içteki grafik dataların yazılacağı bölümden dışa doğru padding ve marginler
 
 			let space = 10                                                            	//ile dışa doğru chart kısmının ve svg kısmının width ve hight değerlerini
             let vol_width = width														//hazır hale getiriyoruz
@@ -206,7 +224,6 @@ export default {
 				this.$store.state.loader=true
 				this.$store.state.chart_key++
 				this.$router.push({name:"Chart",params:{id:this.$route.params.id},query:{view:"daily"}})
-				//this.$store.dispatch("getChartData",this.$route.query.view)
 			}
 
 		},
@@ -216,7 +233,6 @@ export default {
 				this.$store.state.loader=true
 				this.$store.state.chart_key++
 				this.$router.push({name:"Chart",params:{id:this.$route.params.id},query:{view:"weekly"}})
-				//this.$store.dispatch("getChartData",this.$route.query.view)
 			}
 		},
 
@@ -225,13 +241,13 @@ export default {
 				this.$store.state.loader=true
 				this.$store.state.chart_key++
 				this.$router.push({name:"Chart",params:{id:this.$route.params.id},query:{view:"monthly"}})
-				//this.$store.dispatch("getChartData",this.$route.query.view)
 			}
 		},
     },
 	beforeRouteUpdate (to, from, next) {
+		console.log("from",from)
+		console.log("to",to)
 		this.$store.state.loader=true
-		this.$store.dispatch("getChartData",to.query.view)
 		this.$store.state.chart_key++
 		next()
 	}
@@ -290,5 +306,30 @@ export default {
 			opacity: 1;
 			z-index: 2;
 		}
+	}
+
+	.waiting{
+		position: absolute;
+		left: 0;
+		top: 0;
+		height: 130%;
+		width: 100%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		border-radius: 10px;
+		background-color: rgb(161, 186, 193);
+		opacity: .75;
+		z-index: 3;
+	}
+	.text{
+		position: absolute;
+		left: 40%;
+		top: 40%;
+		opacity: 1;
+		font-size: 50px;
+		z-index: 4;
+		font-weight: bold;
+		filter: drop-shadow(0 0 20px grey);
 	}
 </style>

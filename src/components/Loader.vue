@@ -17,12 +17,10 @@ export default {
     methods:{
         loader(){
         let list = document.getElementsByClassName("loader-block")
-        //let delay = 0
 
         for (let index = 0; index < list.length; index++) {
             list[index].style.background=`rgb(${Math.floor(Math.random()*120)},${Math.floor(Math.random()*120)},${Math.floor(Math.random()*120)})`
             list[index].style.animationDelay=(Math.random())+"s"
-            //delay+=0.3
         }
 
         }

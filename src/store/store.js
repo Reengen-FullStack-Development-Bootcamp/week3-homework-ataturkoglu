@@ -16,6 +16,8 @@ export default new Vuex.Store({
     chart_key:0,
     user:"Guest",
     log_count:0,
+    requests:0,
+    waiting:false,
     API:"cc7a52ffb5msha38b3d0953d7f6ep197d81jsn227207fde546",
   },
   mutations: {
@@ -48,165 +50,59 @@ export default new Vuex.Store({
   actions: {
 
     async getChartData({commit,state},view){
-      if(state.searchSymbol!=null){
-        switch (view) {
-          case "daily":{
-            
-            const daily_options = {
-              method: 'GET',
-              url: 'https://alpha-vantage.p.rapidapi.com/query',
-              params: {
-                function: 'TIME_SERIES_DAILY',
-                symbol: `${state.searchSymbol}`,
-                outputsize: '30',
-                datatype: 'json'
-              },
-              headers: {
-                'x-rapidapi-host': 'alpha-vantage.p.rapidapi.com',
-                'x-rapidapi-key': state.API
-              }
-            };
-            
-            await axios.request(daily_options).then(function (response) { 
-              let data = response.data["Time Series (Daily)"]
-              let list=[]
-              Object.keys(data).forEach(item=>{
-                  let obj = new Object({
-                      date:item,
-                      open:data[item]["1. open"],
-                      close:data[item]["4. close"],
-                      high:data[item]["2. high"],
-                      low:data[item]["3. low"],
-                      volume:data[item]["5. volume"]
-                  })
-                  list.push(obj)
-              })
-  
-              commit("setData",list.slice(0,30))
-  
-            }).catch(function (error) {
-              console.error(error);
-            });
-            break;
-          }
-  
-          case "weekly":{
-            
-            const weekly_options = {
-              method: 'GET',
-              url: 'https://alpha-vantage.p.rapidapi.com/query',
-              params: {function: 'TIME_SERIES_WEEKLY', symbol: `${state.searchSymbol}`, datatype: 'json'},
-              headers: {
-                'x-rapidapi-host': 'alpha-vantage.p.rapidapi.com',
-                'x-rapidapi-key': state.API
-              }
-            };
-            
-            axios.request(weekly_options).then(function (response) {
-              let data = response.data["Weekly Time Series"]
-              let list=[]
-              Object.keys(data).forEach(item=>{
-                  let obj = new Object({
-                      date:item,
-                      open:data[item]["1. open"],
-                      close:data[item]["4. close"],
-                      high:data[item]["2. high"],
-                      low:data[item]["3. low"],
-                      volume:data[item]["5. volume"]
-                  })
-                  list.push(obj)
-              })
-              
-              commit("setData",list.slice(0,30))
-  
-            }).catch(function (error) {
-              console.error(error);
-            });  
-  
-            break;
-          }
-  
-          case "monthly":{
-            
-            const montly_options = {
-              method: 'GET',
-              url: 'https://alpha-vantage.p.rapidapi.com/query',
-              params: {symbol: `${state.searchSymbol}`, function: 'TIME_SERIES_MONTHLY', datatype: 'json'},
-              headers: {
-                'x-rapidapi-host': 'alpha-vantage.p.rapidapi.com',
-                'x-rapidapi-key': state.API
-              }
-            };
-            
-            axios.request(montly_options).then(function (response) {
-              let data = response.data["Monthly Time Series"]
-              let list=[]
-              Object.keys(data).forEach(item=>{
-                  let obj = new Object({
-                      date:item,
-                      open:data[item]["1. open"],
-                      close:data[item]["4. close"],
-                      high:data[item]["2. high"],
-                      low:data[item]["3. low"],
-                      volume:data[item]["5. volume"]
-                  })
-                  list.push(obj)
-              })
-              
-              commit("setData",list.slice(0,13))
-  
-            }).catch(function (error) {
-              console.error(error);
-            });
-  
-            break;
-          }
-  
-          default:{
-  
-            let default_options = {
-              method: 'GET',
-              url: 'https://alpha-vantage.p.rapidapi.com/query',
-              params: {
-                function: 'TIME_SERIES_DAILY',
-                symbol: `${state.searchSymbol}`,
-                outputsize: '30',
-                datatype: 'json'
-              },
-              headers: {
-                'x-rapidapi-host': 'alpha-vantage.p.rapidapi.com',
-                'x-rapidapi-key': state.API
-              }
-            };
-            
-            await axios.request(default_options).then(function (response) { 
-              let data = response.data["Time Series (Daily)"]
-              let list=[]
-              Object.keys(data).forEach(item=>{
-                  let obj = new Object({
-                      date:item,
-                      open:data[item]["1. open"],
-                      close:data[item]["4. close"],
-                      high:data[item]["2. high"],
-                      low:data[item]["3. low"],
-                      volume:data[item]["5. volume"]
-                  })
-                  list.push(obj)
-              })
-  
-              commit("setData",list.slice(0,30))
-  
-            }).catch(function (error) {
-              console.error(error);
-            });
-  
-            break;
-          }
+      state.requests++
+      sessionStorage.setItem("requests",state.requests)
+      const options = {
+        method: 'GET',
+        url: 'https://alpha-vantage.p.rapidapi.com/query',
+        params: {
+          function: `TIME_SERIES_${view.toUpperCase()}`,
+          symbol: `${state.searchSymbol}`,
+          outputsize: '30',
+          datatype: 'json'
+        },
+        headers: {
+          'x-rapidapi-host': 'alpha-vantage.p.rapidapi.com',
+          'x-rapidapi-key': state.API
         }
-      }
+      };
+      
+      await axios.request(options).then(function (response) {
+        let data
+        if(view=="daily"){
+          data = response.data["Time Series (Daily)"]
+        }else if(view=="weekly"){
+          data = response.data["Weekly Time Series"]
+        }else if(view=="monthly"){
+          data = response.data["Monthly Time Series"]
+        }else{
+          data = response.data["Time Series (Daily)"]
+        }
+        let list=[]
+        Object.keys(data).forEach(item=>{
+            let obj = new Object({
+                date:item,
+                open:data[item]["1. open"],
+                close:data[item]["4. close"],
+                high:data[item]["2. high"],
+                low:data[item]["3. low"],
+                volume:data[item]["5. volume"]
+            })
+            list.push(obj)
+        })
+
+        commit("setData",list.slice(0,30))
+
+      }).catch(function (error) {
+        state.waiting=true
+        console.error(error);
+        state.loader=false
+      });
     },
 
     getSymbolbyName({commit,state}){
+      state.requests++
+      sessionStorage.setItem("requests",state.requests)
       const options = {
         method: 'GET',
         url: 'https://alpha-vantage.p.rapidapi.com/query',
@@ -230,6 +126,7 @@ export default new Vuex.Store({
 
         commit("setFoundCompanies",list)
       }).catch(function (error) {
+        state.waiting=true
         console.error(error);
       });
     }
