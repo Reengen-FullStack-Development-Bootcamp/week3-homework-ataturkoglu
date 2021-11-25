@@ -18,6 +18,7 @@ export default new Vuex.Store({
     log_count:0,
     requests:0,
     waiting:false,
+    buttonWaiting:false,
     API:"cc7a52ffb5msha38b3d0953d7f6ep197d81jsn227207fde546",
   },
   mutations: {
@@ -101,6 +102,7 @@ export default new Vuex.Store({
     },
 
     getSymbolbyName({commit,state}){
+      state.buttonWaiting=true
       state.requests++
       sessionStorage.setItem("requests",state.requests)
       const options = {
@@ -125,6 +127,7 @@ export default new Vuex.Store({
         })
 
         commit("setFoundCompanies",list)
+        state.buttonWaiting=false
       }).catch(function (error) {
         state.waiting=true
         console.error(error);
