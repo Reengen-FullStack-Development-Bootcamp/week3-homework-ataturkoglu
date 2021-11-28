@@ -1,26 +1,3 @@
 Rapid API'dan axios ve vuetify autocomplete ile alınan şirket borsa verilerini, d3.js ile candle stick chart yapıyoruz. Route'lar arası geçişleri log için kaydediyoruz. Admin kullanıcı olmadan admin componentine giriş denemelerini de uyarı şeklinde loglara kaydediyoruz.
 
-# odev3
-
-## Project setup
-```
-npm install
-```
-
-### Compiles and hot-reloads for development
-```
-npm run serve
-```
-
-### Compiles and minifies for production
-```
-npm run build
-```
-
-### Lints and fixes files
-```
-npm run lint
-```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+![screen](https://user-images.githubusercontent.com/71823597/143720450-ccdcd3a8-c338-459a-8ec0-a916d090ab9c.gif)
